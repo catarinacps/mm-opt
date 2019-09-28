@@ -1,9 +1,9 @@
-#	-- c-template --
+#	-- cache-opt --
 #
-#	c-template's project Makefile.
+#	cache-opt's project Makefile.
 #
 #	Utilization example:
-#		make <TARGET> ["DEBUG=true"]
+#		make <TARGET> [COMP_OPT=<optimization level>]
 #
 #	@param TARGET
 #		Can be any of the following:
@@ -12,8 +12,8 @@
 #		redo - cleans up and then builds
 #		help - shows the utilization example
 #
-#	@param "DEBUG=true"
-#		When present, the build will happen in debug mode.
+#	@param COMP_OPT=<optimization level>
+#		When present, the build will happen with the given optimization level.
 #
 #	@author
 #		@hcpsilva - Henrique Silva
@@ -31,7 +31,9 @@ OUT_DIR := build
 SRC_DIR := src
 LIB_DIR := lib
 
-DEBUG :=
+#	Here goes the compiler optimization to be used
+#	If none is provided, O0 is utilized
+COMP_OPT :=
 
 #	- Compilation flags:
 #	Compiler and language version
@@ -42,17 +44,12 @@ DEBUGF := $(if $(DEBUG),-g -fsanitize=address)
 CFLAGS :=\
 	-Wall \
 	-Wextra \
-	-Wpedantic\
+	-Wpedantic \
 	-Wshadow \
-	-Wunreachable-code
-OPT := $(if $(DEBUG),-O0,-O3 -march=native)
+	-Wno-unused-parameter
+OPT := $(if $(COMP_OPT),-O$(COMP_OPT),-O0)
 LIB := -L$(LIB_DIR)
 INC := -I$(INC_DIR) -I$(SRC_DIR)
-
-#	Put here any dependencies you wish to include in the project, according to the
-#	following format:
-#	"<name> <URL> [<URL> ...]" "<name> <URL> [<URL> ...]" ...
-DEPS :=
 
 ################################################################################
 #	Files:
@@ -75,18 +72,18 @@ OBJ := $(patsubst %.c, $(OBJ_DIR)/%.o, $(notdir $(SRC)))
 
 #	- Executables:
 $(TARGET): $(OUT_DIR)/%: $(SRC_DIR)/%.c $(OBJ)
-	$(CC) -o $@ $^ $(INC) $(LIB) $(DEBUGF) $(OPT)
+	$(CC) -o $@ $(filter-out $(OBJ_DIR)/mm_%.o, $^) $(patsubst mult_%,$(OBJ_DIR)/mm_%.o,$*) $(INC) $(LIB) $(DEBUGF) $(OPT)
 
 #	- Objects:
 $(OBJ_DIR)/%.o:
-	$(CC) -c -o $@ $(filter %/$*.c, $(SRC)) $(INC) $(CFLAGS) $(DEBUGF) $(OPT)
+	$(CC) -c -o $@ $(filter %/$*.c,$(SRC)) $(INC) $(CFLAGS) $(DEBUGF) $(OPT)
 
 ################################################################################
 #	Targets:
 
 .DEFAULT_GOAL = all
 
-all: deps $(TARGET)
+all: $(TARGET)
 
 clean:
 	rm -f $(OBJ_DIR)/*.o $(INC_DIR)/*~ $(TARGET) *~ *.o
@@ -94,7 +91,7 @@ clean:
 redo: clean all
 
 help:
-	@echo "c-template's project Makefile."
+	@echo "cache-opt's project Makefile."
 	@echo
 	@echo "Utilization example:"
 	@echo " make <TARGET> ['DEBUG=true']"
@@ -116,8 +113,4 @@ help:
 print-%:
 	@echo $* = $($*)
 
-#	Dependency fetching
-deps:
-	@./scripts/build.sh '$(DEPS)'
-
-.PHONY: all clean redo help print-% deps
+.PHONY: all clean redo help print-%
