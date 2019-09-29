@@ -1,0 +1,31 @@
+Primeiramente, labbook em txt sim e pau no cu do emacs.
+
+Segundamente:
+Cada thread operando sobre seus pedaços das matrizes originais, porém não podem
+operar sobre a mesma matriz final porque senão vai ter conflito.
+Então uma ideia é que cada thread faça sua operação em uma matriz privada que
+depois pode ser somada por meio de avx :)
+
+
+Sobre máquina: blaise
+Sobre o CPU: Intel Xeon E5-2699 v4 Broadwell
+Referências:
+https://en.wikichip.org/wiki/intel/microarchitectures/broadwell_(client)
+https://en.wikichip.org/wiki/intel/xeon_e5#Broadwell_EP_.28v4.29
+
+Sobre cache:
+Tam de linha: 64 bytes, cabendo 16 números inteiros dentro de cada linha
+(inteiros de 4 bytes)
+Tam de cache: 32Kib (32.768 Bytes) 8-way
+Número de linhas: 512 (32.768B/64B)
+Número máximo de elementos que podem estar em cache: 8192 elementos de matrizes
+(512*16)
+Número máximo de elementos por matriz: 2730 pra cada matriz (8192/3)
+Tamanho de uma única matriz de 1024x1024: 4,19MB (1024x1024*4(bytes por
+inteiro)) (2^22)
+Linhas necessárias pra uma matriz de 1024x1024: 65.536 (2^22/2^6=2^16)
+
+
+
+Sobre utilização de SIMD/AVX:
+https://software.intel.com/en-us/articles/using-avx-without-writing-avx-code
