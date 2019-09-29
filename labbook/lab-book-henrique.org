@@ -1,0 +1,30 @@
+#+title: Lab-book do Henrique
+#+author: Henrique Silva
+#+email: hcpsilva@inf.ufrgs.br
+#+infojs_opt:
+#+property: session *R*
+#+property: cache yes
+#+property: results graphics
+#+property: exports both
+#+property: tangle yes
+
+Primeiramente, lab-book em org sim (jeito certo) e pau no cu do txt.
+
+* Sumário                                                             :TOC_3:
+- [[#diário][Diário]]
+  - [[#2019-09-29][2019-09-29]]
+
+* Diário
+
+Anotações que não merecem tópicos só pra elas.
+
+** 2019-09-29
+
+Bom, algumas coisas que eu pensei agora depois de acordar:
+
+- Fazer design fatorial completo dos experimentos (não são muitas variáveis,
+  deve ser tranquilo)
+- Achar otimizações de multiplicação de matrizes na internet deve ser tipo muito
+  fácil então não vamos contar que nosso trab "vai ser muito mais do que eles
+  peçam" por definição (i.e. qualquer um que sabe usar google vai acabar dando
+  de cara com o particionamento e com openmp)
