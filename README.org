@@ -47,7 +47,7 @@ variável para o experimento.
 *Variáveis*:
 
 - Otimizações de código aplicadas (i.e. as 3 que faremos)
-- Otimização automática de compilador (O0, O1, 02, 03)
+- Otimização automática de compilador (O0, O1, O2, O3)
 - SMT (?)
 
 ** Build
