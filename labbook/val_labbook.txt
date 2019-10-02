@@ -42,3 +42,24 @@ Also: não utilizar SMT!
 
 Sobre utilização de SIMD/AVX:
 https://software.intel.com/en-us/articles/using-avx-without-writing-avx-code
+
+
+01/10/19
+
+Provavelmente tem um LRU lá, então é bom evitar thrashing. Evitar thrashing é
+simplesmente garantir a divisão das matrizes em subconjuntos de tamanho bom.
+Tentando entender como particionar. Pq se fizer em conjuntos quadrados, é
+terrível: sem localidade, e não é assim que funciona na multiplicação:
+A primeira coluna da matriz A vai multiplicar a primeira linha da matriz B.
+Então é vantagem ter VER COM OS GURIS.
+
+
+Memory Alignment:
+Não tenho ideia de como cheguei nisso, mas:
+A gente tem que alocar a memória de forma alinhada pra garantir que vão estar de
+fato os 16 elementos inteiros na linha de cache. O malloc não garante isso.
+https://embeddedartistry.com/blog/2017/2/20/implementing-aligned-malloc
+https://linux.die.net/man/3/memalign <- função a ser usada (a POSIX, que é atual)
+
+Also, se formos fazer diferentes subconjuntos alocados separadamente, tem que
+tbm fazer essas alocações de forma alinhada.
