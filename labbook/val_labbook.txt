@@ -52,6 +52,9 @@ Tentando entender como particionar. Pq se fizer em conjuntos quadrados, é
 terrível: sem localidade, e não é assim que funciona na multiplicação:
 A primeira coluna da matriz A vai multiplicar a primeira linha da matriz B.
 Então é vantagem ter VER COM OS GURIS.
+Na real, dividir em quadrados é inevitável pra que se aproveite a localidade
+espacial: cabem 16 números por linha de cache, então as 1024 colunas com certeza
+vão ser divididas em no mínimo conjuntos de 16 colunas
 
 
 Memory Alignment:
@@ -63,3 +66,12 @@ https://linux.die.net/man/3/memalign <- função a ser usada (a POSIX, que é at
 
 Also, se formos fazer diferentes subconjuntos alocados separadamente, tem que
 tbm fazer essas alocações de forma alinhada.
+
+
+
+Ideia:
+- Uma otm de cache: blocking (separar em Subconjuntos).
+- Paralelismo com OpenMP.
+
+Ver como fazer com o particionamento pra entender como aproveitar isso no
+paralelismo.
