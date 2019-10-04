@@ -33,11 +33,11 @@ LIB_DIR := lib
 
 #	Here goes the compiler optimization to be used
 #	If none is provided, O0 is utilized
-COMP_OPT :=
+COMP_OPT := -march=native
 
 #	- Compilation flags:
 #	Compiler and language version
-CC := gcc -std=c17
+CC := gcc -std=c11
 #	If DEBUG is defined, we'll turn on the debug flag and attach address
 #	sanitizer on the executables.
 DEBUGF := $(if $(DEBUG),-g -fsanitize=address)

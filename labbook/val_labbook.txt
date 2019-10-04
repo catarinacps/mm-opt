@@ -75,3 +75,21 @@ Ideia:
 
 Ver como fazer com o particionamento pra entender como aproveitar isso no
 paralelismo.
+
+
+04/10/19
+
+Queremos testar o uso da diretiva #pragma omp simd no código pra gerar código
+SIMD sobre os for. Pra isso a gente vai adicionar a diretiva, compilar e fazer
+objdump -d binary > binary.asm.
+
+1º - memalign. TODO testar se tem diferença.
+
+2º - alocação contínua.
+
+3° - blocking ou AVX???
+
+
+
+--march=native: indica que ta compilando nativamente pro comp saber detalhes
+específicos da máquina. Pode ajudar nas insts avx.
