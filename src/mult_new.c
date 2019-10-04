@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
     /* multiplica as matrizes a e b */
     double inicio_clock = pega_tempo();
     multiplica_matriz(m, n, mat_a, mat_b, mat_c);
-    double duracao = (pega_tempo() - inicio_clock) / 1000000;
+    double duracao = (pega_tempo() - inicio_clock);
 
 #ifdef IMPRIME
     printf("Depois da Multiplicacao!\n");
