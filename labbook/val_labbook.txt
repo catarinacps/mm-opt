@@ -82,14 +82,28 @@ paralelismo.
 Queremos testar o uso da diretiva #pragma omp simd no código pra gerar código
 SIMD sobre os for. Pra isso a gente vai adicionar a diretiva, compilar e fazer
 objdump -d binary > binary.asm.
+(não funcionou, não conseguimos gerar código com avx)
 
-1º - memalign. TODO testar se tem diferença.
+1º - memalign. não deu diferença pra execução normal, mas talvez dê efeito com
+vetorização.
 
 2º - alocação contínua.
 
-3° - blocking ou AVX???
+3° - blocking???
+
+4° - transposição da matriz b (de 81 pra 34)
+
+5° - AVX: com -ftree-vectorize: ruim.
+
+Info: com -O3 fica 19s
+      com -O3 e matriz b transposta fica 5s
+      código original fica 81s
+      com -ftree-vectorize ficou 83
 
 
 
 --march=native: indica que ta compilando nativamente pro comp saber detalhes
-específicos da máquina. Pode ajudar nas insts avx.
+específicos da máquina. Pode ajudar nas insts avx. Não compila COM as insts, mas
+enable a compilação com as insts avx. Pra de fato compilar COM avx: produces
+code optmized (-mtune=native)
+(não funcionou exatamente kkk)
