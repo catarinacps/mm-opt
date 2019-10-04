@@ -33,7 +33,7 @@ LIB_DIR := lib
 
 #	Here goes the compiler optimization to be used
 #	If none is provided, O0 is utilized
-COMP_OPT := -march=native
+COMP_OPT := -march=native -ftree-vectorize -mtune=native
 
 #	- Compilation flags:
 #	Compiler and language version
@@ -46,8 +46,9 @@ CFLAGS :=\
 	-Wextra \
 	-Wpedantic \
 	-Wshadow \
-	-Wno-unused-parameter
-OPT := $(if $(COMP_OPT),-O$(COMP_OPT),-O0)
+	-Wno-unused-parameter \
+	-fopenmp-simd
+OPT := $(if $(COMP_OPT),$(COMP_OPT),-O0)
 LIB := -L$(LIB_DIR)
 INC := -I$(INC_DIR) -I$(SRC_DIR)
 
