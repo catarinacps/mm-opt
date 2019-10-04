@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <stdbool.h>
+#include <omp.h>
 
 void multiplica_matriz(int m, int n, int** matA, int** matB, int** matC);
 

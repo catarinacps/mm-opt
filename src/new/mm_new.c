@@ -4,6 +4,7 @@ void multiplica_matriz(int m, int n, int** matA, int** matB, int** matC)
 {
     for (int i = 0; i < m; i++) {
         for (int j = 0; j < n; j++) {
+//#pragma omp simd
             for (int k = 0; k < m; k++) {
                 matC[i][j] += matA[i][k] * matB[k][j];
             }
