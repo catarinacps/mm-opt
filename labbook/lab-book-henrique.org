@@ -13,11 +13,16 @@ Primeiramente, lab-book em org sim (jeito certo) e pau no cu do txt.
 * Sumário                                                             :TOC_3:
 - [[#diário][Diário]]
   - [[#2019-09-29][2019-09-29]]
+  - [[#2019-10-06][2019-10-06]]
 - [[#otimizações][Otimizações]]
-  - [[#particionamento-da-matriz][Particionamento da matriz]]
-  - [[#paralelização-e-simd-no-loop-de-multiplicação][Paralelização e SIMD no loop de multiplicação]]
+  - [[#particionamento-da-matriz-blocking][Particionamento da matriz (blocking)]]
+  - [[#simd-no-loop-de-multiplicação][SIMD no loop de multiplicação]]
   - [[#alocação-contígua-da-matriz-em-memória][Alocação contígua da matriz em memória]]
+  - [[#alinhar-a-memória-alocada][Alinhar a memória alocada]]
+  - [[#transposição-da-matriz][Transposição da matriz]]
 - [[#experimentos][Experimentos]]
+  - [[#design][Design]]
+  - [[#script][Script]]
 
 * Diário
 
@@ -39,19 +44,35 @@ Tipo, como desligar e ligar só as otimizações que a gente quer em tempo de
 compilação? =#if=? Usar defines e =#ifndef= me parece que pode ficar bem chato
 bem rapido.
 
+** 2019-10-06
+
+Então, hoje é o dia que eu espero testar o memalign e o simd do OpemMP de
+novo.
+
+Okay, eu acho que não dá pra vetorizar sem transpor a matriz. Como fazer o load
+se os dados estão separados por um certo stride? Além disso, precisamos dizer
+pro compilador que os ponteiros não são aliased pra ele confiar que a
+vetorização é possível (keyword restrict).
+
+O =#pragma omp simd= só passa a ter efeito quando o nível de otimização é -O1!!!
+Resposta interessante no stack-overflow: [[https://stackoverflow.com/questions/32000917/c-loop-optimization-help-for-final-assignment-with-compiler-optimization-disabl/32001196#32001196][Why is -O0 bad]]
+
+Vou ignorar o esquema da vetorização e focar na transposição e alinhamento.
+
+Sem diferença usando ou não alinhamento de memória.
+
 * Otimizações
 
 Okay, pelo o que eu entendi a gente ta pensando nas seguintes otimizações:
 
-** Particionamento da matriz
+** Particionamento da matriz (blocking)
 
 Ainda não parei pra pensar como isso funcionaria. Juro que vou ler teu lab-book
 okay Val.
 
-** Paralelização e SIMD no loop de multiplicação
+** SIMD no loop de multiplicação
 
-So far parece a mais simples. Incluir OpenMP e usar as diretivas =parallel for=
-e =simd=.
+So far parece a mais simples. Incluir OpenMP e usar a diretiva =simd=.
 
 ** Alocação contígua da matriz em memória
 
@@ -59,6 +80,15 @@ Not sure como que isso conta como uma otimização. Parece mais um side-effect
 desejável das outras otimizações, mas oh well.
 
 Enfim, alocar a matriz continuamente em memória para evitar misses.
+
+** Alinhar a memória alocada
+
+Teoricamente da muito efeito?
+
+** Transposição da matriz
+
+Acessar uma coluna como se fosse uma linha (porque em memória é uma linha) ajuda
+muito.
 
 * Experimentos
 
@@ -69,4 +99,152 @@ código.
 Quer dizer, sempre da pra fazer um brute force do problema e escrever um
 executavel pra cada versão, right? (muito feio tho)
 
-Enfim, quando eu tiver paciência gero o nosso projeto experimental aqui.
+Okay, sobre experimentos:
+
+#+begin_src R :session :results none
+library(DoE.base)
+library(tidyverse)
+options(crayon.enabled=FALSE)
+#+end_src
+
+** Design
+
+Seed randômica:
+
+#+NAME: rand_seed
+#+begin_src R :session :results value :exports results
+floor(runif(1,1,99999))
+#+end_src
+
+#+RESULTS: rand_seed
+: 56753
+
+Design:
+
+#+begin_src R :session :results none
+otim_1 = c("OTM_1", "-")
+otim_2 = c("OTM_2", "-")
+otim_3 = c("OTM_3", "-")
+otim_4 = c("OTM_4", "-")
+otim_5 = c("OTM_5", "-")
+comp = c("-O0", "-O1", "-O2", "-O3")
+
+fac.design(
+    nfactors=6,
+    replications=30,
+    repeat.only=FALSE,
+    blocks=1,
+    randomize=TRUE,
+    seed=56753,
+    factor.names=list(
+        otimizacao_1=otim_1,
+        otimizacao_2=otim_2,
+        otimizacao_3=otim_3,
+        otimizacao_4=otim_4,
+        otimizacao_5=otim_5,
+        compiler=comp)) %>%
+  as_tibble %>%
+  select(-Blocks) %>%
+  write_delim("../experiments/runs.plan", delim=" ", col_names=FALSE)
+
+# the space delimited file is to help with the posterior parsing in the shell
+# script
+#+end_src
+
+** Script
+
+Para a execução...
+
+#+begin_src bash :shebang "#!/bin/bash" :tangle ../experiments/exp.slurm
+#SBATCH --time=72:00:00
+#SBATCH --chdir=$SCRATCH
+#SBATCH --partition=blaise
+#SBATCH --nodes=1
+#SBATCH --output=$HOME/slurm_outputs/%x_%j.out
+#SBATCH --error=$HOME/slurm_outputs/%x_%j.err
+#BATCH --mail-type=END,FAIL
+#BATCH --mail-user=hcpsilva@inf.ufrgs.br
+
+# parameters:
+MACHINE="blaise_88"
+# the experiment ID, defined in the lab-book
+EXP_ID=${@[0]}
+# the experiment directory
+EXP_DIR=${@[1]}
+
+# experiment name (which is the ID and the machine and its core count)
+EXP_NAME=${EXP_ID}_${MACHINE}
+
+# not sure if I can trust the sbatch variable
+cd $SCRATCH
+
+# prepare our directory
+mkdir $EXP_NAME
+pushd $EXP_NAME
+
+# copy the code folder
+cp -r $EXP_DIR/.. code
+pushd code
+
+# to track each individual config execution
+exec_id=0
+
+# execute the experiment
+while read -r otm1 otm2 otm3 otm4 otm5 comp; do
+    echo "-> Parameters set to: $otm1 $otm2 $otm3 $otm4 $otm5 $comp"
+    echo
+
+    iteration_output_file=../results/${OTM1}_${OTM2}_${OTM3}_${OTM4}_${OTM5}_${comp}_${exec_id}
+
+    if [[ $otm1 != "-" ]]; then
+        OPT1=-D$otm1
+    else
+        OPT1=
+    fi
+
+    if [[ $otm2 != "-" ]]; then
+        OPT2=-D$otm2
+    else
+        OPT2=
+    fi
+
+    if [[ $otm3 != "-" ]]; then
+        OPT3=-D$otm3
+    else
+        OPT3=
+    fi
+
+    if [[ $otm4 != "-" ]]; then
+        OPT4=-D$otm4
+    else
+        OPT4=
+    fi
+
+    if [[ $otm5 != "-" ]]; then
+        OPT5=-D$otm5
+    else
+        OPT5=
+    fi
+
+    make redo USED_OPT="$OPT1 $OPT2 $OPT3 $OPT4 $OPT5" COMP_OPT="$comp"
+
+    ./build/mult_old 1024 1024 >> $iteration_output_file.raw
+
+    ./build/mult_new 1024 1024 >> $iteration_output_file.raw
+
+    # TODO: the same but with perf
+
+    # stress the memory to prevent cache influence between runs
+    stress-ng --vm 3 --vm-bytes 75% -t 5s &> /dev/null
+
+    ((exec_id++))
+    echo
+done < $EXP_DIR/runs.plan
+
+popd
+
+tar czf $HOME/$EXP_NAME.tar.gz *
+
+popd
+rm -rf $SCRATCH/*
+#+end_src

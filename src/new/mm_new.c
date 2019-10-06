@@ -4,9 +4,9 @@ void multiplica_matriz(int m, int n, int** matA, int** matB, int** matC)
 {
     for (int i = 0; i < m; i++) {
         for (int j = 0; j < n; j++) {
-//#pragma omp simd
+#pragma omp simd
             for (int k = 0; k < m; k++) {
-                matC[i][j] += matA[i][k] * matB[k][j];
+                matC[i][j] += matA[i][k] * matB[j][k];
             }
         }
     }
@@ -14,7 +14,7 @@ void multiplica_matriz(int m, int n, int** matA, int** matB, int** matC)
 
 int** aloca_matriz(int m, int n)
 {
-    int* dados_matriz = (int*)calloc(m * n, sizeof(int));
+    int* dados_matriz = aligned_alloc(64, m * n * sizeof(int));
     // como isso fica contínuo em memória e a sol original não?
     int** matriz = (int**)calloc(m, sizeof(int*));
 
@@ -36,4 +36,5 @@ int** aloca_matriz(int m, int n)
 void desaloca_matriz(int m, int n, int** matriz)
 {
     free(matriz[0]);
+    free(matriz);
 }
