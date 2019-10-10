@@ -18,8 +18,10 @@ EXP_DIR=$2
 # experiment name (which is the ID and the machine and its core count)
 EXP_NAME=${EXP_ID}_${MACHINE}
 
+# go to the scratch dir
 cd $SCRATCH
 
+# and clean everything
 rm -rf *
 
 # prepare our directory
@@ -76,6 +78,7 @@ done < $EXP_DIR/runs.plan
 
 popd
 
+# pack everything and send to the exp dir
 tar czf $EXP_DIR/$EXP_NAME.tar.gz *
 
 popd
