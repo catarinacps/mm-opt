@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --time=72:00:00
-#SBATCH --chdir=$SCRATCH
+#SBATCH --chdir=.
 #SBATCH --partition=draco
 #SBATCH --nodes=1
 #SBATCH --output=$HOME/slurm_outputs/%x_%j.out
@@ -18,7 +18,6 @@ EXP_DIR=${@[1]}
 # experiment name (which is the ID and the machine and its core count)
 EXP_NAME=${EXP_ID}_${MACHINE}
 
-# not sure if I can trust the sbatch variable
 cd $SCRATCH
 
 # prepare our directory
