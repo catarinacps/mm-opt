@@ -33,7 +33,7 @@ LIB_DIR := lib
 
 #	Here goes the compiler optimization to be used
 #	If none is provided, O0 is utilized (gcc default)
-COMP_OPT :=
+COMP_OPT := -O1
 
 #	Here goes our to-be-used optimization macro
 USED_OPT :=
@@ -51,7 +51,7 @@ CFLAGS :=\
 	-Wshadow \
 	-Wno-unused-parameter
 OPT := $(COMP_OPT) $(USED_OPT) -march=native
-LIB := -L$(LIB_DIR)
+LIB := -L$(LIB_DIR) -fopenmp -fopenmp-simd
 INC := -I$(INC_DIR) -I$(SRC_DIR)
 
 ################################################################################
@@ -75,11 +75,11 @@ OBJ := $(patsubst %.c, $(OBJ_DIR)/%.o, $(notdir $(SRC)))
 
 #	- Executables:
 $(TARGET): $(OUT_DIR)/%: $(SRC_DIR)/%.c $(OBJ)
-	$(CC) -o $@ $(filter-out $(OBJ_DIR)/mm_%.o, $^) $(patsubst mult_%,$(OBJ_DIR)/mm_%.o,$*) $(INC) $(LIB) $(DEBUGF) $(OPT)
+	$(CC) -o $@ $(filter-out $(OBJ_DIR)/mm_%.o, $^) $(patsubst mult_%,$(OBJ_DIR)/mm_%.o,$*) $(INC) $(DEBUGF) $(OPT) $(LIB) 
 
 #	- Objects:
 $(OBJ_DIR)/%.o:
-	$(CC) -c -o $@ $(filter %/$*.c,$(SRC)) $(INC) $(CFLAGS) $(DEBUGF) $(OPT)
+	$(CC) -c -o $@ $(filter %/$*.c,$(SRC)) $(INC) $(CFLAGS) $(DEBUGF) $(OPT) $(LIB) 
 
 ################################################################################
 #	Targets:
