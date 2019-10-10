@@ -188,7 +188,7 @@ while read -r id otm1 otm2 otm3 counter comp; do
     echo "-> Parameters set to: $id $otm1 $otm2 $otm3 $comp"
     echo
 
-    iteration_output_file=../results/${OTM1}_${OTM2}_${OTM3}_${counter}_${comp}_${id}
+    iteration_output=../results/${OTM1}_${OTM2}_${OTM3}_${counter}_${comp}_${id}
 
     # alocacao contigua
     if [[ $otm1 == "y" ]]; then
@@ -213,12 +213,12 @@ while read -r id otm1 otm2 otm3 counter comp; do
 
     make redo USED_OPT="$OPT1 $OPT2 $OPT3" COMP_OPT="$comp"
 
-    ./build/mult_new 1024 1024 >> $iteration_output_file.raw
+    ./build/mult_new 1024 1024 > $iteration_output.raw
 
     # stress the memory to prevent cache influence between runs
     stress-ng --vm 3 --vm-bytes 75% -t 5s &> /dev/null
 
-    perf stat -o $iteration_output_file.perf -e $counter ./build/mult_new 1024 1024
+    perf stat -o $iteration_output.perf -e $counter ./build/mult_new 1024 1024
 
     # stress the memory to prevent cache influence between runs
     stress-ng --vm 3 --vm-bytes 75% -t 5s &> /dev/null
