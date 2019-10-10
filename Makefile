@@ -32,6 +32,7 @@ SRC_DIR := src
 LIB_DIR := lib
 
 #	Here goes the compiler optimization to be used
+#	ITS SUPPOSED TO BE DEFINED WHEN CALLING THE MAKEFILE, NOT MODIFIED HERE
 #	If none is provided, O0 is utilized (gcc default)
 COMP_OPT :=
 

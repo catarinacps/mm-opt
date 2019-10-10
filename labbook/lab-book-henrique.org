@@ -125,21 +125,23 @@ otim_1 = c("y", "n")
 otim_2 = c("y", "n")
 otim_3 = c("y", "n")
 comp = c("-O0", "-O1", "-O2", "-O3")
+cter = c("cycles", "L1-dcache-load-misses", "instructions", "l1d.replacement")
 
 fac.design(
-    nfactors=4,
+    nfactors=5,
     replications=30,
     repeat.only=FALSE,
     blocks=1,
     randomize=TRUE,
     seed=56753,
     factor.names=list(
-        otimizacao_1=otim_1,
-        otimizacao_2=otim_2,
-        otimizacao_3=otim_3,
-        compiler=comp)) %>%
+      otimizacao_1=otim_1,
+      otimizacao_2=otim_2,
+      otimizacao_3=otim_3,
+      counter=cter,
+      compiler=comp)) %>%
   as_tibble %>%
-  transmute(id = as.numeric(Blocks), otimizacao_1, otimizacao_2, otimizacao_3, compiler) %>%
+  transmute(id = as.numeric(Blocks), otimizacao_1, otimizacao_2, otimizacao_3, counter, compiler) %>%
   write_delim("../experiments/runs.plan", delim=" ", col_names=FALSE)
 
 # the space delimited file is to help with the posterior parsing in the shell
@@ -151,9 +153,9 @@ fac.design(
 Para a execução...
 
 #+begin_src bash :shebang "#!/bin/bash" :tangle ../experiments/exp.slurm
-#SBATCH --time=2:00:00
+#SBATCH --time=72:00:00
 #SBATCH --chdir=$SCRATCH
-#SBATCH --partition=blaise
+#SBATCH --partition=draco
 #SBATCH --nodes=1
 #SBATCH --output=$HOME/slurm_outputs/%x_%j.out
 #SBATCH --error=$HOME/slurm_outputs/%x_%j.err
@@ -161,7 +163,7 @@ Para a execução...
 #BATCH --mail-user=hcpsilva@inf.ufrgs.br
 
 # parameters:
-MACHINE="blaise_88"
+MACHINE="draco_32"
 # the experiment ID, defined in the lab-book
 EXP_ID=${@[0]}
 # the experiment directory
@@ -182,22 +184,22 @@ cp -r $EXP_DIR/.. code
 pushd code
 
 # execute the experiment
-while read -r id otm1 otm2 otm3 comp; do
+while read -r id otm1 otm2 otm3 counter comp; do
     echo "-> Parameters set to: $id $otm1 $otm2 $otm3 $comp"
     echo
 
-    iteration_output_file=../results/${OTM1}_${OTM2}_${OTM3}_${comp}_${id}
+    iteration_output_file=../results/${OTM1}_${OTM2}_${OTM3}_${counter}_${comp}_${id}
 
     # alocacao contigua
     if [[ $otm1 == "y" ]]; then
-        OPT1=-DOTM_1
+        OPT1="-DOTM_1"
     else
         OPT1=
     fi
 
     # matriz b transposta
     if [[ $otm2 == "y" ]]; then
-        OPT2=-DOTM_2
+        OPT2="-DOTM_2"
     else
         OPT2=
     fi
@@ -216,7 +218,10 @@ while read -r id otm1 otm2 otm3 comp; do
     # stress the memory to prevent cache influence between runs
     stress-ng --vm 3 --vm-bytes 75% -t 5s &> /dev/null
 
-    # TODO: the same but with perf
+    perf stat -o $iteration_output_file.perf -e $counter ./build/mult_new 1024 1024
+
+    # stress the memory to prevent cache influence between runs
+    stress-ng --vm 3 --vm-bytes 75% -t 5s &> /dev/null
 
     echo
 done < $EXP_DIR/runs.plan
