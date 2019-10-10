@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "old/mm_old.h"
+#include "mm/mm.h"
 #include "utils/utils.h"
 
 int main(int argc, char* argv[])
@@ -32,7 +32,11 @@ int main(int argc, char* argv[])
 
     /* popula as matrizes a e b */
     inicializa_matriz(m, n, mat_a);
+#ifdef OTM_2
+    inicializa_matriz_t(m, n, mat_b);
+#else
     inicializa_matriz(m, n, mat_b);
+#endif
 
 #ifdef IMPRIME
     printf("Depois da inicializacao!\n");
@@ -45,7 +49,7 @@ int main(int argc, char* argv[])
     /* multiplica as matrizes a e b */
     double inicio_clock = pega_tempo();
     multiplica_matriz(m, n, mat_a, mat_b, mat_c);
-    double duracao = (pega_tempo() - inicio_clock) / 1000000;
+    double duracao = (pega_tempo() - inicio_clock);
 
 #ifdef IMPRIME
     printf("Depois da Multiplicacao!\n");

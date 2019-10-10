@@ -75,7 +75,7 @@ OBJ := $(patsubst %.c, $(OBJ_DIR)/%.o, $(notdir $(SRC)))
 
 #	- Executables:
 $(TARGET): $(OUT_DIR)/%: $(SRC_DIR)/%.c $(OBJ)
-	$(CC) -o $@ $(filter-out $(OBJ_DIR)/mm_%.o, $^) $(patsubst mult_%,$(OBJ_DIR)/mm_%.o,$*) $(INC) $(LIB) $(DEBUGF) $(OPT)
+	$(CC) -o $@ $^ $(INC) $(LIB) $(DEBUGF) $(OPT)
 
 #	- Objects:
 $(OBJ_DIR)/%.o:
@@ -94,7 +94,7 @@ clean:
 redo: clean all
 
 help:
-	@echo "cache-opt's project Makefile."
+	@echo "mm-opt's project Makefile."
 	@echo
 	@echo "Utilization example:"
 	@echo " make <TARGET> ['DEBUG=true']"
