@@ -23,6 +23,7 @@ Primeiramente, lab-book em org sim (jeito certo) e pau no cu do txt.
 - [[#experimentos][Experimentos]]
   - [[#design][Design]]
   - [[#script][Script]]
+  - [[#post-processing][Post-processing]]
 
 * Diário
 
@@ -237,4 +238,31 @@ tar czf $EXP_DIR/$EXP_NAME.tar.gz *
 
 popd
 rm -rf $SCRATCH/*
+#+end_src
+
+** Post-processing
+
+Agora um leve post-processing dos dados porque não fui esperto o suficiente pra
+transformar tudo em csv direto.
+
+#+begin_src bash :results none :async
+REPO_DIR=$(dirname $(pwd))
+RAW_OUTPUTS=tf_draco_32.tar.gz
+
+pushd $REPO_DIR/experiments
+
+RAW_DIR=raw_data
+CLEAN_DATA=exp_data.csv
+
+mkdir $RAW_DIR
+tar -C $RAW_DIR -xzf $RAW_OUTPUTS
+
+echo "rep_id,time,metric,metric_value,optm_1,optm_2,optm_3,comp" > $CLEAN_DATA
+
+for file in $RAW_DIR/results/*.raw; do
+    config=(`basename $file .raw | tr _ ' '`)
+    perf_obs=`grep -w ${config[3]} ${file%.raw}.perf | awk '{print $1}' | tr , .`
+
+    echo "${config[5]},$(cat $file),${config[3]},${perf_obs},${config[0]},${config[1]},${config[2]},$(tr -d - <<< ${config[4]})" >> $CLEAN_DATA
+done
 #+end_src
