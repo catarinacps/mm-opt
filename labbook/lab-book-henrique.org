@@ -14,16 +14,17 @@ Primeiramente, lab-book em org sim (jeito certo) e pau no cu do txt.
 - [[#diário][Diário]]
   - [[#2019-09-29][2019-09-29]]
   - [[#2019-10-06][2019-10-06]]
+  - [[#2019-10-11][2019-10-11]]
 - [[#otimizações][Otimizações]]
-  - [[#particionamento-da-matriz-blocking][Particionamento da matriz (blocking)]]
-  - [[#simd-no-loop-de-multiplicação][SIMD no loop de multiplicação]]
   - [[#alocação-contígua-da-matriz-em-memória][Alocação contígua da matriz em memória]]
-  - [[#alinhar-a-memória-alocada][Alinhar a memória alocada]]
   - [[#transposição-da-matriz][Transposição da matriz]]
+  - [[#simd-no-loop-de-multiplicação][SIMD no loop de multiplicação]]
 - [[#experimentos][Experimentos]]
   - [[#design][Design]]
   - [[#script][Script]]
   - [[#post-processing][Post-processing]]
+  - [[#visualização][Visualização]]
+    - [[#preliminar][Preliminar]]
 
 * Diário
 
@@ -62,34 +63,30 @@ Vou ignorar o esquema da vetorização e focar na transposição e alinhamento.
 
 Sem diferença usando ou não alinhamento de memória.
 
+** 2019-10-11
+
+Pretendo hoje fazer umas visualizações preliminares dos dados obtidos dos
+experimentos...
+
 * Otimizações
 
-Okay, pelo o que eu entendi a gente ta pensando nas seguintes otimizações:
+Implementamos as seguintes otimizações sobre o código original:
 
-** Particionamento da matriz (blocking)
-
-Ainda não parei pra pensar como isso funcionaria. Juro que vou ler teu lab-book
-okay Val.
-
-** SIMD no loop de multiplicação
-
-So far parece a mais simples. Incluir OpenMP e usar a diretiva =simd=.
-
-** Alocação contígua da matriz em memória
+** Alocação contígua da matriz em memória                            :OTM_1:
 
 Not sure como que isso conta como uma otimização. Parece mais um side-effect
 desejável das outras otimizações, mas oh well.
 
 Enfim, alocar a matriz continuamente em memória para evitar misses.
 
-** Alinhar a memória alocada
-
-Teoricamente da muito efeito?
-
-** Transposição da matriz
+** Transposição da matriz                                            :OTM_2:
 
 Acessar uma coluna como se fosse uma linha (porque em memória é uma linha) ajuda
 muito.
+
+** SIMD no loop de multiplicação                                     :OTM_3:
+
+So far parece a mais simples. Incluir OpenMP e usar a diretiva =simd=.
 
 * Experimentos
 
@@ -249,7 +246,7 @@ transformar tudo em csv direto.
 REPO_DIR=$(dirname $(pwd))
 RAW_OUTPUTS=tf_draco_32.tar.gz
 
-pushd $REPO_DIR/experiments
+pushd $REPO_DIR/experiments/data_1
 
 RAW_DIR=raw_data
 CLEAN_DATA=exp_data.csv
@@ -266,3 +263,99 @@ for file in $RAW_DIR/results/*.raw; do
     echo "${config[5]},$(cat $file),${config[3]},${perf_obs},${config[0]},${config[1]},${config[2]},$(tr -d - <<< ${config[4]})" >> $CLEAN_DATA
 done
 #+end_src
+
+Done!
+
+Coloquei tudo na pasta =data_1/= por motivos desses dados serem relativos a
+primeira execução do experimento. Algo me diz que vamos executar ele mais vezes
+até segunda...
+
+** Visualização
+
+Agora sobre a visualização dos dados... vamos começar com uma preliminar e
+depois vamos pra uma de verdadezinha...
+
+*** Preliminar
+
+Bom, começemos com o simples...
+
+Tentando o impacto de somente a otimização 1 dado o nível de otimização do
+compilador:
+
+#+begin_src R :tangle yes :session :results output graphics :file images/test_1.png
+df <- read_csv("../experiments/data_1/exp_data.csv")
+
+df %>%
+  select(time, optm_1, optm_2, optm_3, comp) %>%
+  filter(optm_2 == "n" && optm_3 == "n") %>%
+  select(time, optm_1, comp) %>%
+  ggplot(aes(x = optm_1, y = time)) +
+  stat_boxplot(geom = 'errorbar', width = 0.2) +
+  geom_boxplot(width = 0.2, fill = "lightgrey") +
+  facet_grid(cols = vars(comp)) +
+  theme_bw() +
+  theme(text = element_text(family = "Palatino", size = 16))
+#+end_src
+
+#+RESULTS:
+[[file:images/test_1.png]]
+
+E agora repetindo o mesmo para a otimização 2...
+
+#+begin_src R :tangle yes :session :results output graphics :file images/test_2.png
+df <- read_csv("../experiments/data_1/exp_data.csv")
+
+df %>%
+  select(time, optm_1, optm_2, optm_3, comp) %>%
+  filter(optm_1 == "n" && optm_3 == "n") %>%
+  select(time, optm_2, comp) %>%
+  ggplot(aes(x = optm_2, y = time)) +
+  stat_boxplot(geom = 'errorbar', width = 0.2) +
+  geom_boxplot(width = 0.2, fill = "lightgrey") +
+  facet_grid(cols = vars(comp)) +
+  theme_bw() +
+  theme(text = element_text(family = "Palatino", size = 16))
+#+end_src
+
+#+RESULTS:
+[[file:images/test_2.png]]
+
+E a otimização 3...
+
+#+begin_src R :tangle yes :session :results output graphics :file images/test_3.png
+df <- read_csv("../experiments/data_1/exp_data.csv")
+
+df %>%
+  select(time, optm_1, optm_2, optm_3, comp) %>%
+  filter(optm_1 == "n" && optm_2 == "n") %>%
+  select(time, optm_3, comp) %>%
+  ggplot(aes(x = optm_3, y = time)) +
+  stat_boxplot(geom = 'errorbar', width = 0.2) +
+  geom_boxplot(width = 0.2, fill = "lightgrey") +
+  facet_grid(cols = vars(comp)) +
+  theme_bw() +
+  theme(text = element_text(family = "Palatino", size = 16))
+#+end_src
+
+#+RESULTS:
+[[file:images/test_3.png]]
+
+Agora vou tentar ver a diferença de tempo das combinações das otimizações 1, 2 e
+3:
+
+#+begin_src R :tangle yes :session :results output graphics :file images/test_4.png
+df <- read_csv("../experiments/data_1/exp_data.csv")
+
+df %>%
+  select(time, optm_1, optm_2, optm_3, comp) %>%
+  filter(comp == "O1") %>%
+  ggplot(aes(x = optm_1, y = time)) +
+  stat_boxplot(geom = 'errorbar', width = 0.2) +
+  geom_boxplot(width = 0.2, fill = "lightgrey") +
+  facet_grid(cols = vars(optm_2), rows = vars(optm_3)) +
+  theme_bw() +
+  theme(text = element_text(family = "Palatino", size = 16))
+#+end_src
+
+#+RESULTS:
+[[file:images/test_4.png]]
