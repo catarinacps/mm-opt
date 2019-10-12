@@ -287,7 +287,7 @@ df <- read_csv("../experiments/data_1/exp_data.csv")
 
 df %>%
   select(time, optm_1, optm_2, optm_3, comp) %>%
-  filter(optm_2 == "n" && optm_3 == "n") %>%
+  filter(optm_2 == "n", optm_3 == "n") %>%
   select(time, optm_1, comp) %>%
   ggplot(aes(x = optm_1, y = time)) +
   stat_boxplot(geom = 'errorbar', width = 0.2) +
@@ -307,7 +307,7 @@ df <- read_csv("../experiments/data_1/exp_data.csv")
 
 df %>%
   select(time, optm_1, optm_2, optm_3, comp) %>%
-  filter(optm_1 == "n" && optm_3 == "n") %>%
+  filter(optm_1 == "n", optm_3 == "n") %>%
   select(time, optm_2, comp) %>%
   ggplot(aes(x = optm_2, y = time)) +
   stat_boxplot(geom = 'errorbar', width = 0.2) +
@@ -327,7 +327,7 @@ df <- read_csv("../experiments/data_1/exp_data.csv")
 
 df %>%
   select(time, optm_1, optm_2, optm_3, comp) %>%
-  filter(optm_1 == "n" && optm_2 == "n") %>%
+  filter(optm_1 == "n", optm_2 == "n") %>%
   select(time, optm_3, comp) %>%
   ggplot(aes(x = optm_3, y = time)) +
   stat_boxplot(geom = 'errorbar', width = 0.2) +
@@ -348,11 +348,11 @@ df <- read_csv("../experiments/data_1/exp_data.csv")
 
 df %>%
   select(time, optm_1, optm_2, optm_3, comp) %>%
-  filter(comp == "O1") %>%
-  ggplot(aes(x = optm_1, y = time)) +
+  filter(optm_1 == "y", optm_2 == "y", optm_3 == "n") %>%
+  select(time, comp) %>%
+  ggplot(aes(x = comp, y = time)) +
   stat_boxplot(geom = 'errorbar', width = 0.2) +
   geom_boxplot(width = 0.2, fill = "lightgrey") +
-  facet_grid(cols = vars(optm_2), rows = vars(optm_3)) +
   theme_bw() +
   theme(text = element_text(family = "Palatino", size = 16))
 #+end_src

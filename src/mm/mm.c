@@ -9,7 +9,7 @@ void multiplica_matriz(int m, int n, int** matA, int** matB, int** matC)
 #endif
             for (int k = 0; k < m; k++) {
 #ifdef OTM_2
-                matC[i][j] += matA[i][k] * matB[i][j];
+                matC[i][j] += matA[i][k] * matB[j][k];
 #else
                 matC[i][j] += matA[i][k] * matB[k][j];
 #endif
@@ -31,9 +31,8 @@ int** aloca_matriz(int m, int n)
     if (dados_matriz == NULL)
         exit(-2);
 
-    for (int i = 0; i < m; i++) {
-        matriz[i] = dados_matriz + i * n;
-    }
+    for (int i = 0; i < m; i++)
+        matriz[i] = dados_matriz + i * n * sizeof(int);
 #else
     for (int i = 0; i < m; i++)
         matriz[i] = (int*)calloc(n, sizeof(int));
