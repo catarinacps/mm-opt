@@ -1,6 +1,10 @@
 #include "mm.h"
 
+#ifdef OTM_3
+void multiplica_matriz(int m, int n, int* restrict* restrict matA, int* restrict* restrict matB, int* restrict* restrict matC)
+#else
 void multiplica_matriz(int m, int n, int** matA, int** matB, int** matC)
+#endif
 {
     for (int i = 0; i < m; i++) {
         for (int j = 0; j < n; j++) {
