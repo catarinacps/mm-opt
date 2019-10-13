@@ -25,6 +25,7 @@ Primeiramente, lab-book em org sim (jeito certo) e pau no cu do txt.
   - [[#post-processing][Post-processing]]
   - [[#visualização][Visualização]]
     - [[#preliminar][Preliminar]]
+    - [[#final][Final]]
 
 * Diário
 
@@ -258,7 +259,7 @@ echo "rep_id,time,metric,metric_value,optm_1,optm_2,optm_3,comp" > $CLEAN_DATA
 
 for file in $RAW_DIR/results/*.raw; do
     config=(`basename $file .raw | tr _ ' '`)
-    perf_obs=`grep -w ${config[3]} ${file%.raw}.perf | awk '{print $1}' | tr , .`
+    perf_obs=`grep -w ${config[3]} ${file%.raw}.perf | awk '{print $1}' | tr -d ,`
 
     echo "${config[5]},$(cat $file),${config[3]},${perf_obs},${config[0]},${config[1]},${config[2]},$(tr -d - <<< ${config[4]})" >> $CLEAN_DATA
 done
@@ -359,3 +360,148 @@ df %>%
 
 #+RESULTS:
 [[file:images/test_4.png]]
+
+*** Final
+
+Começando por selecionar o dataset que queremos usar:
+
+#+begin_src R :tangle yes :session :results none
+df <- read_csv("../experiments/data_1/exp_data.csv")
+#+end_src
+
+Agora, aos gráficos:
+
+**** Diferença de tempo entre ligar as otimizações individualmente
+
+Primeira otimização primeiro
+
+#+begin_src R :tangle yes :session :results output graphics :file images/only_otm_1.png :width 600
+df %>%
+  select(time, optm_1, optm_2, optm_3, comp) %>%
+  filter(optm_2 == "n", optm_3 == "n") %>%
+  select(time, optm_1, comp) %>%
+  ggplot(aes(x = optm_1, y = time)) +
+  stat_boxplot(geom = 'errorbar', width = 0.2) +
+  geom_boxplot(width = 0.2, fill = "lightgrey") +
+  facet_grid(cols = vars(comp)) +
+  labs(x = "Estado da primeira otimização", y = "Tempo (segundos)", title = "Tempo conforme estado da 1ª otimização") +
+  scale_x_discrete(labels = c("y" = "Ligada", "n" = "Desligada")) +
+  theme_bw() +
+  theme(text = element_text(family = "Palatino", size = 16),
+        axis.text.x = element_text(angle = 45, vjust = 0.6))
+#+end_src
+
+#+RESULTS:
+[[file:images/only_otm_1.png]]
+
+E agora a segunda otimização
+
+#+begin_src R :tangle yes :session :results output graphics :file images/only_otm_2.png :width 600
+df %>%
+  select(time, optm_1, optm_2, optm_3, comp) %>%
+  filter(optm_1 == "n", optm_3 == "n") %>%
+  select(time, optm_2, comp) %>%
+  ggplot(aes(x = optm_2, y = time)) +
+  stat_boxplot(geom = 'errorbar', width = 0.2) +
+  geom_boxplot(width = 0.2, fill = "lightgrey") +
+  facet_grid(cols = vars(comp)) +
+  labs(x = "Estado da segunda otimização", y = "Tempo (segundos)", title = "Tempo conforme estado da 2ª otimização") +
+  scale_x_discrete(labels = c("y" = "Ligada", "n" = "Desligada")) +
+  theme_bw() +
+  theme(text = element_text(family = "Palatino", size = 16),
+        axis.text.x = element_text(angle = 45, vjust = 0.6))
+#+end_src
+
+#+RESULTS:
+[[file:images/only_otm_2.png]]
+
+E finalmente a terceira
+
+#+begin_src R :tangle yes :session :results output graphics :file images/only_otm_3.png :width 600
+df %>%
+  select(time, optm_1, optm_2, optm_3, comp) %>%
+  filter(optm_1 == "n", optm_2 == "n") %>%
+  select(time, optm_3, comp) %>%
+  ggplot(aes(x = optm_3, y = time)) +
+  stat_boxplot(geom = 'errorbar', width = 0.2) +
+  geom_boxplot(width = 0.2, fill = "lightgrey") +
+  facet_grid(cols = vars(comp)) +
+  labs(x = "Estado da terceira otimização", y = "Tempo (segundos)", title = "Tempo conforme estado da 3ª otimização") +
+  scale_x_discrete(labels = c("y" = "Ligada", "n" = "Desligada")) +
+  theme_bw() +
+  theme(text = element_text(family = "Palatino", size = 16),
+        axis.text.x = element_text(angle = 45, vjust = 0.6))
+#+end_src
+
+#+RESULTS:
+[[file:images/only_otm_3.png]]
+
+**** Visualizando as diferenças em otimizações dos compiladores
+
+Começando com todas otimizações desligadas
+
+#+begin_src R :tangle yes :session :results output graphics :file images/comp_otm_off.png :width 550
+df %>%
+  select(time, optm_1, optm_2, optm_3, comp) %>%
+  filter(optm_1 == "n", optm_2 == "n", optm_3 == "n") %>%
+  select(time, comp) %>%
+  ggplot(aes(x = comp, y = time)) +
+  stat_boxplot(geom = 'errorbar', width = 0.2) +
+  geom_boxplot(width = 0.2, fill = "lightgrey") +
+  labs(x = "Otimização de compilação utilizada",
+       y = "Tempo (segundos)",
+       title = "Tempo conforme otimização de compilador aplicada",
+       subtitle = "com todas otimizações de código desligadas") +
+  theme_bw() +
+  theme(text = element_text(family = "Palatino", size = 16),
+        axis.text.x = element_text(angle = 45, vjust = 0.6))
+#+end_src
+
+#+RESULTS:
+[[file:images/comp_otm_off.png]]
+
+e agora com todas as otimizações ligadas
+
+#+begin_src R :tangle yes :session :results output graphics :file images/comp_otm_on.png :width 550
+df %>%
+  select(time, optm_1, optm_2, optm_3, comp) %>%
+  filter(optm_1 == "y", optm_2 == "y", optm_3 == "y") %>%
+  select(time, comp) %>%
+  ggplot(aes(x = comp, y = time)) +
+  stat_boxplot(geom = 'errorbar', width = 0.2) +
+  geom_boxplot(width = 0.2, fill = "lightgrey") +
+  labs(x = "Otimização de compilação utilizada",
+       y = "Tempo (segundos)",
+       title = "Tempo conforme otimização de compilador aplicada",
+       subtitle = "com todas otimizações de código ligadas") +
+  theme_bw() +
+  theme(text = element_text(family = "Palatino", size = 16),
+        axis.text.x = element_text(angle = 45, vjust = 0.6))
+#+end_src
+
+#+RESULTS:
+[[file:images/comp_otm_on.png]]
+
+**** Vendo o impacto nos ciclos de execução
+
+Vamos dar uma olhada geral nas otimizações 2 e 3
+
+#+begin_src R :tangle yes :session :results output graphics :file images/cycles_2_and_3.png :width 600
+df %>%
+  select(metric, metric_value, optm_1, optm_2, optm_3, comp) %>%
+  filter(optm_1 == "n", metric == "cycles") %>%
+  select(metric_value, optm_2, optm_3, comp) %>%
+  ggplot(aes(x = comp, y = metric_value)) +
+  stat_boxplot(geom = 'errorbar', width = 0.2) +
+  geom_boxplot(width = 0.2, fill = "lightgrey") +
+  facet_grid(rows = vars(optm_2), cols = vars(optm_3), labeller = label_both) +
+  labs(x = "Otimização de compilação aplicada",
+       y = "Número de ciclos",
+       title = "Número de ciclos observados conforme uso\ndas otimizações 2 e 3") +
+  theme_bw() +
+  theme(text = element_text(family = "Palatino", size = 16),
+        axis.text.x = element_text(angle = 45, vjust = 0.6))
+#+end_src
+
+#+RESULTS:
+[[file:images/cycles_2_and_3.png]]
