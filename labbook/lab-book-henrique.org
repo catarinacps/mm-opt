@@ -383,6 +383,7 @@ df %>%
   ggplot(aes(x = optm_1, y = time)) +
   stat_boxplot(geom = 'errorbar', width = 0.2) +
   geom_boxplot(width = 0.2, fill = "lightgrey") +
+  stat_summary(fun.y = mean, geom = "point", size = 2, color = "red") +
   facet_grid(cols = vars(comp)) +
   labs(x = "Estado da primeira otimização", y = "Tempo (segundos)", title = "Tempo conforme estado da 1ª otimização") +
   scale_x_discrete(labels = c("y" = "Ligada", "n" = "Desligada")) +
@@ -404,6 +405,7 @@ df %>%
   ggplot(aes(x = optm_2, y = time)) +
   stat_boxplot(geom = 'errorbar', width = 0.2) +
   geom_boxplot(width = 0.2, fill = "lightgrey") +
+  stat_summary(fun.y = mean, geom = "point", size = 2, color = "red") +
   facet_grid(cols = vars(comp)) +
   labs(x = "Estado da segunda otimização", y = "Tempo (segundos)", title = "Tempo conforme estado da 2ª otimização") +
   scale_x_discrete(labels = c("y" = "Ligada", "n" = "Desligada")) +
@@ -425,6 +427,7 @@ df %>%
   ggplot(aes(x = optm_3, y = time)) +
   stat_boxplot(geom = 'errorbar', width = 0.2) +
   geom_boxplot(width = 0.2, fill = "lightgrey") +
+  stat_summary(fun.y = mean, geom = "point", size = 2, color = "red") +
   facet_grid(cols = vars(comp)) +
   labs(x = "Estado da terceira otimização", y = "Tempo (segundos)", title = "Tempo conforme estado da 3ª otimização") +
   scale_x_discrete(labels = c("y" = "Ligada", "n" = "Desligada")) +
@@ -448,6 +451,7 @@ df %>%
   ggplot(aes(x = comp, y = time)) +
   stat_boxplot(geom = 'errorbar', width = 0.2) +
   geom_boxplot(width = 0.2, fill = "lightgrey") +
+  stat_summary(fun.y = mean, geom = "point", size = 2, color = "red") +
   labs(x = "Otimização de compilação utilizada",
        y = "Tempo (segundos)",
        title = "Tempo conforme otimização de compilador aplicada",
@@ -470,6 +474,7 @@ df %>%
   ggplot(aes(x = comp, y = time)) +
   stat_boxplot(geom = 'errorbar', width = 0.2) +
   geom_boxplot(width = 0.2, fill = "lightgrey") +
+  stat_summary(fun.y = mean, geom = "point", size = 2, color = "red") +
   labs(x = "Otimização de compilação utilizada",
        y = "Tempo (segundos)",
        title = "Tempo conforme otimização de compilador aplicada",
@@ -487,13 +492,6 @@ df %>%
 Vamos dar uma olhada geral nas otimizações 2 e 3
 
 #+begin_src R :tangle yes :session :results output graphics :file images/cycles_2_and_3.png :width 600 :height 550
-nomes = c(
-  y = "Ligada",
-  n = "Desligada",
-  optm_2 = "Otimização 2",
-  optm_3 = "Otimização 3"
-)
-
 df %>%
   select(metric, metric_value, optm_1, optm_2, optm_3, comp) %>%
   filter(optm_1 == "n", metric == "cycles") %>%
@@ -501,6 +499,7 @@ df %>%
   ggplot(aes(x = comp, y = metric_value)) +
   stat_boxplot(geom = 'errorbar', width = 0.2) +
   geom_boxplot(width = 0.2, fill = "lightgrey") +
+  stat_summary(fun.y = mean, geom = "point", size = 2, color = "red") +
   facet_grid(optm_2 ~ optm_3, labeller = labeller(optm_2 = c(y = "Otimização 2: Ligada", n = "Otimização 2: Desligada"),
                                                   optm_3 = c(y = "Otimização 3: Ligada", n = "Otimização 3: Desligada"))) +
   labs(x = "Otimização de compilação aplicada",
@@ -527,9 +526,10 @@ df %>%
   ggplot(aes(x = comp, y = metric_value)) +
   stat_boxplot(geom = 'errorbar', width = 0.2) +
   geom_boxplot(width = 0.2, size = 1.5, fill = "lightgrey") +
+  stat_summary(fun.y = mean, geom = "point", size = 2, color = "red") +
   facet_grid(optm_2 ~ optm_1, labeller = labeller(optm_1 = c(y = "Otimização 1: Ligada", n = "Otimização 1: Desligada"),
                                                   optm_2 = c(y = "Otimização 2: Ligada", n = "Otimização 2: Desligada"))) +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 6)) +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 7)) +
   labs(x = "Otimização de compilação aplicada",
        y = "Número de misses à L1 de dados",
        title = "Número de misses observados",
@@ -550,9 +550,11 @@ df %>%
   ggplot(aes(x = comp, y = metric_value)) +
   stat_boxplot(geom = 'errorbar', width = 0.2) +
   geom_boxplot(width = 0.2, fill = "lightgrey") +
+  stat_summary(fun.y = mean, geom = "point", size = 2, color = "red") +
   facet_grid(optm_2 ~ optm_1, labeller = labeller(optm_1 = c(y = "Otimização 1: Ligada", n = "Otimização 1: Desligada"),
                                                   optm_2 = c(y = "Otimização 2: Ligada", n = "Otimização 2: Desligada"))) +
-  scale_y_continuous(labels = scales::scientific) +
+  scale_y_continuous(labels = scales::scientific,
+                     breaks = scales::pretty_breaks(n = 7)) +
   labs(x = "Otimização de compilação aplicada",
        y = "Número de misses à L1 de dados",
        title = "Número de misses observados no 1º nível de cache de dados",
