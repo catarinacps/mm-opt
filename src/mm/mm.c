@@ -36,7 +36,7 @@ int** aloca_matriz(int m, int n)
         exit(-2);
 
     for (int i = 0; i < m; i++)
-        matriz[i] = dados_matriz[i * n];
+        matriz[i] = &dados_matriz[i * n];
 #else
     for (int i = 0; i < m; i++)
         matriz[i] = (int*)calloc(n, sizeof(int));
