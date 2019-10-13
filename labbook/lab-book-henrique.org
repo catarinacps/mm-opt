@@ -486,7 +486,14 @@ df %>%
 
 Vamos dar uma olhada geral nas otimizações 2 e 3
 
-#+begin_src R :tangle yes :session :results output graphics :file images/cycles_2_and_3.png :width 600
+#+begin_src R :tangle yes :session :results output graphics :file images/cycles_2_and_3.png :width 600 :height 550
+nomes = c(
+  y = "Ligada",
+  n = "Desligada",
+  optm_2 = "Otimização 2",
+  optm_3 = "Otimização 3"
+)
+
 df %>%
   select(metric, metric_value, optm_1, optm_2, optm_3, comp) %>%
   filter(optm_1 == "n", metric == "cycles") %>%
@@ -494,10 +501,12 @@ df %>%
   ggplot(aes(x = comp, y = metric_value)) +
   stat_boxplot(geom = 'errorbar', width = 0.2) +
   geom_boxplot(width = 0.2, fill = "lightgrey") +
-  facet_grid(rows = vars(optm_2), cols = vars(optm_3), labeller = label_both) +
+  facet_grid(optm_2 ~ optm_3, labeller = labeller(optm_2 = c(y = "Otimização 2: Ligada", n = "Otimização 2: Desligada"),
+                                                  optm_3 = c(y = "Otimização 3: Ligada", n = "Otimização 3: Desligada"))) +
   labs(x = "Otimização de compilação aplicada",
        y = "Número de ciclos",
-       title = "Número de ciclos observados conforme uso\ndas otimizações 2 e 3") +
+       title = "Número de ciclos observados",
+       subtitle = "conforme uso das otimizações 2 e 3") +
   theme_bw() +
   theme(text = element_text(family = "Palatino", size = 16),
         axis.text.x = element_text(angle = 45, vjust = 0.6))
@@ -505,3 +514,53 @@ df %>%
 
 #+RESULTS:
 [[file:images/cycles_2_and_3.png]]
+
+**** Impacto nos misses à L1 conforme uso das otimizações
+
+Focando nas otimizações 1 e 2 pois elas afetam mais a cache:
+
+#+begin_src R :tangle yes :session :results output graphics :file images/misses_1_and_2n.png :width 600 :height 550
+df %>%
+  select(metric, metric_value, optm_1, optm_2, optm_3, comp) %>%
+  filter(optm_3 == "n", optm_2 == "n", metric == "L1-dcache-load-misses") %>%
+  select(metric_value, optm_1, optm_2, comp) %>%
+  ggplot(aes(x = comp, y = metric_value)) +
+  stat_boxplot(geom = 'errorbar', width = 0.2) +
+  geom_boxplot(width = 0.2, size = 1.5, fill = "lightgrey") +
+  facet_grid(optm_2 ~ optm_1, labeller = labeller(optm_1 = c(y = "Otimização 1: Ligada", n = "Otimização 1: Desligada"),
+                                                  optm_2 = c(y = "Otimização 2: Ligada", n = "Otimização 2: Desligada"))) +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 6)) +
+  labs(x = "Otimização de compilação aplicada",
+       y = "Número de misses à L1 de dados",
+       title = "Número de misses observados",
+       subtitle = "conforme uso das otimizações 1 e 2") +
+  theme_bw() +
+  theme(text = element_text(family = "Palatino", size = 16),
+        axis.text.x = element_text(angle = 45, vjust = 0.6))
+#+end_src
+
+#+RESULTS:
+[[file:images/misses_1_and_2n.png]]
+
+#+begin_src R :tangle yes :session :results output graphics :file images/misses_1_and_2y.png :width 600 :height 550
+df %>%
+  select(metric, metric_value, optm_1, optm_2, optm_3, comp) %>%
+  filter(optm_3 == "n", optm_2 == "y", metric == "L1-dcache-load-misses") %>%
+  select(metric_value, optm_1, optm_2, comp) %>%
+  ggplot(aes(x = comp, y = metric_value)) +
+  stat_boxplot(geom = 'errorbar', width = 0.2) +
+  geom_boxplot(width = 0.2, fill = "lightgrey") +
+  facet_grid(optm_2 ~ optm_1, labeller = labeller(optm_1 = c(y = "Otimização 1: Ligada", n = "Otimização 1: Desligada"),
+                                                  optm_2 = c(y = "Otimização 2: Ligada", n = "Otimização 2: Desligada"))) +
+  scale_y_continuous(labels = scales::scientific) +
+  labs(x = "Otimização de compilação aplicada",
+       y = "Número de misses à L1 de dados",
+       title = "Número de misses observados no 1º nível de cache de dados",
+       subtitle = "conforme uso das otimizações 1 e 2") +
+  theme_bw() +
+  theme(text = element_text(family = "Palatino", size = 16),
+        axis.text.x = element_text(angle = 45, vjust = 0.6))
+#+end_src
+
+#+RESULTS:
+[[file:images/misses_1_and_2y.png]]
