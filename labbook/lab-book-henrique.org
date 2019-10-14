@@ -245,9 +245,9 @@ transformar tudo em csv direto.
 
 #+begin_src bash :results none :async
 REPO_DIR=$(dirname $(pwd))
-RAW_OUTPUTS=tf_draco_32.tar.gz
+RAW_OUTPUTS=t1_draco_32.tar.gz
 
-pushd $REPO_DIR/experiments/data_1
+pushd $REPO_DIR/experiments/data_2
 
 RAW_DIR=raw_data
 CLEAN_DATA=exp_data.csv
@@ -479,7 +479,7 @@ df %>%
   stat_boxplot(geom = 'errorbar', width = 0.2) +
   geom_boxplot(width = 0.2, fill = "lightgrey") +
   stat_summary(fun.y = mean, geom = "point", size = 2, color = "red") +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 8),
+  scale_y_continuous(breaks = scales::pretty_breaks(c(2, NA), n = 8),
                      limits = c(2, NA)) +
   labs(x = "Otimização de compilação utilizada",
        y = "Tempo (segundos)",
@@ -532,7 +532,7 @@ df %>%
   select(metric_value, optm_1, optm_2, comp) %>%
   ggplot(aes(x = comp, y = metric_value)) +
   stat_boxplot(geom = 'errorbar', width = 0.2) +
-  geom_boxplot(width = 0.2, size = 1.5, fill = "lightgrey") +
+  geom_boxplot(width = 0.2, fill = "lightgrey") +
   stat_summary(fun.y = mean, geom = "point", size = 2, color = "red") +
   facet_grid(optm_2 ~ optm_1, labeller = labeller(optm_1 = c(y = "Otimização 1: Ligada", n = "Otimização 1: Desligada"),
                                                   optm_2 = c(y = "Otimização 2: Ligada", n = "Otimização 2: Desligada"))) +
