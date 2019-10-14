@@ -366,7 +366,7 @@ df %>%
 Começando por selecionar o dataset que queremos usar:
 
 #+begin_src R :tangle yes :session :results none
-df <- read_csv("../experiments/data_1/exp_data.csv")
+df <- read_csv("../experiments/data_2/exp_data.csv")
 #+end_src
 
 Agora, aos gráficos:
@@ -480,7 +480,7 @@ df %>%
   geom_boxplot(width = 0.2, fill = "lightgrey") +
   stat_summary(fun.y = mean, geom = "point", size = 2, color = "red") +
   scale_y_continuous(breaks = scales::pretty_breaks(c(2, NA), n = 8),
-                     limits = c(2, NA)) +
+                     limits = c(0, NA)) +
   labs(x = "Otimização de compilação utilizada",
        y = "Tempo (segundos)",
        title = "Tempo conforme otimização de compilador aplicada",
@@ -573,3 +573,86 @@ df %>%
 
 #+RESULTS:
 [[file:images/misses_1_and_2y.png]]
+
+**** Sobre o número de instruções executadas
+
+Vamos verificar a diferença entre nenhuma otimização de código ligada e todas
+ligadas:
+
+#+begin_src R :tangle yes :session :results output graphics :file images/insts_all_or_none.png :width 600 :height 550
+df %>%
+  select(metric, metric_value, optm_1, optm_2, optm_3, comp) %>%
+  filter(optm_1 == optm_2, optm_2 == optm_3, metric == "instructions") %>%
+  select(metric_value, optm_1, optm_2, optm_3, comp) %>%
+  ggplot(aes(x = comp, y = metric_value)) +
+  stat_boxplot(geom = 'errorbar', width = 0.2) +
+  geom_boxplot(width = 0.2, fill = "lightgrey") +
+  stat_summary(fun.y = mean, geom = "point", size = 2, color = "red") +
+  facet_grid(. ~ optm_1,
+             labeller = labeller(optm_1 = c(y = "Todas otimizações ligadas",
+                                            n = "Todas otimizações desligadas"))) +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 7)) +
+  labs(x = "Otimização de compilação aplicada",
+       y = "Número de instruções",
+       title = "Número de instruções executadas",
+       subtitle = "conforme uso das otimizações 1, 2 e 3") +
+  theme_bw() +
+  theme(text = element_text(family = "Palatino", size = 16),
+        axis.text.x = element_text(angle = 45, vjust = 0.6))
+#+end_src
+
+#+RESULTS:
+[[file:images/insts_all_or_none.png]]
+
+**** Analizando os replacements na L1D
+
+Olhando somente para as otimizações 1 e 2, novamente:
+
+#+begin_src R :tangle yes :session :results output graphics :file images/rep_1_and_2n.png :width 600 :height 550
+df %>%
+  select(metric, metric_value, optm_1, optm_2, optm_3, comp) %>%
+  filter(optm_3 == "n", optm_2 == "n", metric == "l1d.replacement") %>%
+  select(metric_value, optm_1, optm_2, comp) %>%
+  ggplot(aes(x = comp, y = metric_value)) +
+  stat_boxplot(geom = 'errorbar', width = 0.2) +
+  geom_boxplot(width = 0.2, fill = "lightgrey") +
+  stat_summary(fun.y = mean, geom = "point", size = 2, color = "red") +
+  facet_grid(optm_2 ~ optm_1, labeller = labeller(optm_1 = c(y = "Otimização 1: Ligada", n = "Otimização 1: Desligada"),
+                                                  optm_2 = c(y = "Otimização 2: Ligada", n = "Otimização 2: Desligada"))) +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 7)) +
+  labs(x = "Otimização de compilação aplicada",
+       y = "Número de replacements na L1 de dados",
+       title = "Número de replacements observados",
+       subtitle = "conforme uso das otimizações 1 e 2") +
+  theme_bw() +
+  theme(text = element_text(family = "Palatino", size = 16),
+        axis.text.x = element_text(angle = 45, vjust = 0.6))
+#+end_src
+
+#+RESULTS:
+[[file:images/rep_1_and_2n.png]]
+
+#+begin_src R :tangle yes :session :results output graphics :file images/rep_1_and_2y.png :width 600 :height 550
+df %>%
+  select(metric, metric_value, optm_1, optm_2, optm_3, comp) %>%
+  filter(optm_3 == "n", optm_2 == "y", metric == "l1d.replacement") %>%
+  select(metric_value, optm_1, optm_2, comp) %>%
+  ggplot(aes(x = comp, y = metric_value)) +
+  stat_boxplot(geom = 'errorbar', width = 0.2) +
+  geom_boxplot(width = 0.2, fill = "lightgrey") +
+  stat_summary(fun.y = mean, geom = "point", size = 2, color = "red") +
+  facet_grid(optm_2 ~ optm_1, labeller = labeller(optm_1 = c(y = "Otimização 1: Ligada", n = "Otimização 1: Desligada"),
+                                                  optm_2 = c(y = "Otimização 2: Ligada", n = "Otimização 2: Desligada"))) +
+  scale_y_continuous(labels = scales::scientific,
+                     breaks = scales::pretty_breaks(n = 7)) +
+  labs(x = "Otimização de compilação aplicada",
+       y = "Número de replacements na L1 de dados",
+       title = "Número de replacements observados",
+       subtitle = "conforme uso das otimizações 1 e 2") +
+  theme_bw() +
+  theme(text = element_text(family = "Palatino", size = 16),
+        axis.text.x = element_text(angle = 45, vjust = 0.6))
+#+end_src
+
+#+RESULTS:
+[[file:images/rep_1_and_2y.png]]
