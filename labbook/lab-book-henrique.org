@@ -539,7 +539,7 @@ df %>%
   scale_y_continuous(breaks = scales::pretty_breaks(n = 7)) +
   labs(x = "Otimização de compilação aplicada",
        y = "Número de misses à L1 de dados",
-       title = "Número de misses observados",
+       title = "Número de misses observados no 1º nível de cache de dados",
        subtitle = "conforme uso das otimizações 1 e 2") +
   theme_bw() +
   theme(text = element_text(family = "Palatino", size = 16),
