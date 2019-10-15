@@ -218,7 +218,7 @@ while read -r id otm1 otm2 otm3 comp; do
     time_obs=$(./build/mult 1024 1024)
 
     # add the time
-    csv_line=${csv_line},${time_obs}
+    csv_line+=,${time_obs}
 
     # stress the memory to prevent cache influence between runs
     stress-ng --vm 3 --vm-bytes 75% -t 5s &> /dev/null
@@ -230,11 +230,14 @@ while read -r id otm1 otm2 otm3 comp; do
         perf_obs=$(grep -w $counter temp.perf | awk '{print $1}' | tr -d ,)
 
         # add the metric to the line
-        csv_line=${csv_line},${perf_obs}
+        csv_line+=,${perf_obs}
 
         # stress the memory to prevent cache influence between runs
         stress-ng --vm 3 --vm-bytes 75% -t 5s &> /dev/null
     done
+
+    # add run info
+    csv_line+=,${otm1},${otm2},${otm3},${comp//-}
 
     # commit the line
     echo $csv_line >> $output_csv
